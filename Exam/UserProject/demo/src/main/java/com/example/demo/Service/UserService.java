@@ -22,20 +22,21 @@ public class UserService {
     public static final String BASE_URL="http://localhost:8809/Product";
     WebClient webClient = WebClient.create(BASE_URL);
 
-//    public ResponseEntity getAllProducts(){
-//        ResponseEntity responseEntity = webClient.get()
-//                .uri("/get")
-//                .retrieve()
-//                .toEntity(List.class)
-//                .block();
-//        return responseEntity;
-//    }
-    public Flux<Products> findAll(){
-        return webClient.get()
-            .uri("/get")
-            .retrieve()
-            .bodyToFlux(Products.class);
-    }
+   public List<Products> getAllProducts(){
+       List<Products> responseEntity = webClient.get()
+               .uri("/get")
+               .retrieve()
+               .bodyToFlux(Products.class)
+               .collectList()
+               .block();
+       return responseEntity;
+   }
+//     public Flux<Products> findAll(){
+//         return webClient.get()
+//             .uri("/get")
+//             .retrieve()
+//             .bodyToFlux(Products.class);
+//     }
     public Products findByName(String name){
         return webClient.get().uri("/get-one"+name).retrieve().bodyToMono(Products.class).block();
     }
@@ -57,12 +58,16 @@ public class UserService {
         return userDtoList;
     }
 
-//    public String addToCart(String productName,String userName) {
-//        Flux<Products> products = findAll();
-//        User user = userRepository.findByName(userName);
-//        user.getCart().getProductsList().add(products);
-//        return "Success";
-//    }
+   public String addToCart(String productName,String userName) {
+       List<Products> products = getAllProducts();
+       User user = userRepository.findByName(username);
+       List<String> strings = new ArrayList<>();
+       for(Products products1:products){
+           strings.add(products1.getName());
+       }
+       user.getCart().serProductsList(strings);
+       return "Success";
+   }
 
     public String orderList(List<String> orders,String userName) {
         User user = userRepository.findByName(userName);
